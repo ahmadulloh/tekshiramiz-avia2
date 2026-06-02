@@ -567,41 +567,23 @@ async function searchFlights() {
 
     loader.classList.remove('show');
 
-    if (!result.success || !result.data || Object.keys(result.data).length === 0) {
+    if (!result.success || !result.flights || result.flights.length === 0) {
       empty.classList.add('show');
       empty.querySelector('p').textContent = "Bu yo'nalish uchun narx topilmadi. Boshqa sana yoki yo'nalish sinab ko'ring.";
       return;
     }
 
-    const destKey = result.data[to] ? to : Object.keys(result.data)[0];
-    const entries = result.data[destKey];
-    let flights = [];
-
-    if (Array.isArray(entries)) {
-      flights = entries.slice(0,8).map(function(info, idx) {
-        return {
-          airline: info.airline || 'HY',
-          price: info.price,
-          dep: info.departure_at ? info.departure_at.substring(11,16) : ('0'+(6+idx)).slice(-2)+':00',
-          arr: info.return_at ? info.return_at.substring(11,16) : '--:--',
-          duration: info.duration ? Math.floor(info.duration/60)+'s '+(info.duration%60)+'d' : '--',
-          stops: (info.transfers||0)===0 ? "To'g'ridan-to'g'ri" : (info.transfers)+" ta to'xtash",
-          transfers: info.transfers || 0
-        };
-      });
-    } else {
-      flights = Object.entries(entries).map(function([airline, info], idx) {
-        return {
-          airline: airline,
-          price: info.price,
-          dep: info.departure_at ? info.departure_at.substring(11,16) : ('0'+(6+idx)).slice(-2)+':00',
-          arr: info.return_at ? info.return_at.substring(11,16) : '--:--',
-          duration: info.duration ? Math.floor(info.duration/60)+'s '+(info.duration%60)+'d' : '--',
-          stops: (info.transfers||0)===0 ? "To'g'ridan-to'g'ri" : (info.transfers)+" ta to'xtash",
-          transfers: info.transfers || 0
-        };
-      });
-    }
+    const flights = result.flights.map(function(info, idx) {
+      return {
+        airline: info.airline || 'HY',
+        price: Number(info.price) || 0,
+        dep: info.departure_at ? info.departure_at.substring(11,16) : ('0'+(6+idx)).slice(-2)+':00',
+        arr: info.return_at ? info.return_at.substring(11,16) : '--:--',
+        duration: info.duration ? Math.floor(info.duration/60)+'s '+(info.duration%60)+'d' : '--',
+        stops: (info.transfers||0)===0 ? "To'g'ridan-to'g'ri" : (info.transfers)+" ta to'xtash",
+        transfers: info.transfers || 0
+      };
+    });
 
     if (flights.length === 0) {
       empty.classList.add('show');
